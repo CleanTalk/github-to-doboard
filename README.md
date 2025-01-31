@@ -47,13 +47,15 @@ DoBoard is a CleanTalk project management tool that helps teams organize their w
 
 2. Ensure your web server is configured to handle requests to this file.
 
-3. Set up a webhook in your GitHub repository settings to point to the URL of the `eZgakitv_webHook.php` file.
+3. **Important! Ensure that your copy of /src repo folder has no public access. Otherwise, there can be unauthorized access attempts.**
 
-4. Any opened issue in the GitHub repository will be automatically created as a task in DoBoard.
+4. Set up a webhook in your GitHub repository settings to point to the URL of the `eZgakitv_webHook.php` file.
+
+5. Any opened issue in the GitHub repository will be automatically created as a task in DoBoard.
 
    ![DoBoard Task Example](https://cleantalk-screenshots.s3.us-east-1.amazonaws.com/readme-doboard-task.png)
 
-5. Optionally, you can enable Telegram notifications by adding the `TG_BOT_API_KEY` and `TG_CHAT_ID` environment variables to the `.config` file.
+6. Optionally, you can enable Telegram notifications by adding the `TG_BOT_API_KEY` and `TG_CHAT_ID` environment variables to the `.config` file.
 
 ## Configuration
 
