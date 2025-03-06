@@ -35,27 +35,40 @@ DoBoard is a CleanTalk project management tool that helps teams organize their w
 
 ## Usage
 
-1. Place the `pub/eZgakitv_webHook.php` file in the root of your web server. 
+1. Ensure your web server is configured to handle requests to this file.
+   
+#### Example for apache:
 
-    For example, if you are using Apache, you can place the file in the `/var/www/html` directory.
+```apache
+ <VirtualHost *:80>
+      ServerName example.com
+      DocumentRoot /path/to/github-to-doboard/pub
+      RewriteEngine On
+      RewriteRule ^(.*)$ /path/to/github-to-doboard/pub/eZgakitv_webHook.php [L]
+ </VirtualHost> 
+ ```
+#### Example for nginx:
 
-    If you are using Nginx, you can place the file in the `/var/www/html` directory.
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+    root /path/to/github-to-doboard/pub;
+    location / {
+        try_files $uri /eZgakitv_webHook.php;
+    }
+}
+```
 
-    If you are using a different web server, you can place the file in the root directory of your server.
+2. **Important! Ensure that your copy of /src repo folder has no public access. Otherwise, there can be unauthorized access attempts.**
 
-    **Please note, the file name should be unique to prevent unauthorized access. We recommend to rename the file to a unique name.**
+3. Set up a webhook in your GitHub repository settings to point to the URL of the `eZgakitv_webHook.php` file.
 
-2. Ensure your web server is configured to handle requests to this file.
-
-3. **Important! Ensure that your copy of /src repo folder has no public access. Otherwise, there can be unauthorized access attempts.**
-
-4. Set up a webhook in your GitHub repository settings to point to the URL of the `eZgakitv_webHook.php` file.
-
-5. Any opened issue in the GitHub repository will be automatically created as a task in DoBoard.
+4. Any opened issue in the GitHub repository will be automatically created as a task in DoBoard.
 
    ![DoBoard Task Example](https://cleantalk-screenshots.s3.us-east-1.amazonaws.com/readme-doboard-task.png)
 
-6. Optionally, you can enable Telegram notifications by adding the `TG_BOT_API_KEY` and `TG_CHAT_ID` environment variables to the `.config` file.
+5. Optionally, you can enable Telegram notifications by adding the `TG_BOT_API_KEY` and `TG_CHAT_ID` environment variables to the `.config` file.
 
 ## Configuration
 
