@@ -15,6 +15,12 @@ class DoBoardResponse extends ResponseBase
     private $request;
 
     /**
+     * Extensions developer on Duty role title
+     * @var string
+     */
+    private $extensions_developer_on_duty_role_title = 'Extensions developer on Duty';
+
+    /**
      * @throws \Exception
      */
     public function __construct()
@@ -92,14 +98,17 @@ class DoBoardResponse extends ResponseBase
 
     private function taskAdd()
     {
+        $role_id = $this->getRoleId();
+        $user_id = $this->getDeveloperOnDutyId($role_id);
         $company_id = Utils::getEnv('DOBOARD_COMPANY_ID');
         $this->url = 'https://api.doboard.com/' . $company_id . '/task_add';
         $task_title = '[GitHub issue] ' . $this->request->issueTitle . ' (created automatically)';
         $data = array(
             'session_id' => $this->session_id,
             'name' => $task_title,
-            'user_id' => Utils::getEnv('DOBOARD_AUTHOR_ID'),
+            'user_id' => $user_id,
             'project_id' => Utils::getEnv('DOBOARD_PROJECT_ID'),
+            'due_date' => date('Y-m-d H:i:s'),
         );
         $this->data = http_build_query($data);
         $raw_result = parent::send();
@@ -108,6 +117,66 @@ class DoBoardResponse extends ResponseBase
             throw new \Exception('Task add wrong request: ' . $raw_result);
         }
         return $result['data']['task_id'];
+    }
+
+    /**
+     * Get developer on duty id
+     * @param int $role_id
+     * @return int
+     */
+    private function getDeveloperOnDutyId($role_id)
+    {
+        $company_id = Utils::getEnv('DOBOARD_COMPANY_ID');
+        $this->url = 'https://api.doboard.com/' . $company_id . '/calendar_events_get';
+        $data = [
+            'session_id' => $this->session_id,
+            'period_begin' => date('Y-m-d'),
+            'period_end' => date('Y-m-d', strtotime('+1 day')),
+            'role_id' => $role_id,
+        ];
+        $this->data = http_build_query($data);
+        $raw_result = parent::send();
+        $result = json_decode($raw_result, true, 512, JSON_THROW_ON_ERROR);
+
+        if ( ! isset($result['data']['events']) ) {
+            throw new \Exception('Events not found.');
+        }
+
+        foreach ( $result['data']['events'] as $event ) {
+            if ( $event['role_id'] === $role_id ) {
+                return $event['user_id'];
+            }
+        }
+
+        throw new \Exception('Developer on duty not found in list of events.');
+    }
+
+    /**
+     * Get role id
+     * @return int
+     */
+    private function getRoleId()
+    {
+        $company_id = Utils::getEnv('DOBOARD_COMPANY_ID');
+        $this->url = 'https://api.doboard.com/' . $company_id . '/role_get';
+        $data = [
+            'session_id' => $this->session_id,
+        ];
+        $this->data = http_build_query($data);
+        $raw_result = parent::send();
+        $result = json_decode($raw_result, true, 512, JSON_THROW_ON_ERROR);
+
+        if ( ! isset($result['data']['roles']) ) {
+            throw new \Exception('Roles not found.');
+        }
+
+        foreach ( $result['data']['roles'] as $role ) {
+            if ( $role['name'] === $this->extensions_developer_on_duty_role_title ) {
+                return $role['role_id'];
+            }
+        }
+
+        throw new \Exception('Developer on duty not found in list of events.');
     }
 
     private function commentAdd($task_id)
